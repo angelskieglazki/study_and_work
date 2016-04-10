@@ -26,5 +26,6 @@ int main(void) {
 
 		printf("%% ");
 	}
+
 	exit(0);
 }
