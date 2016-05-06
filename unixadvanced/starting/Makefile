@@ -2,7 +2,7 @@ ROOT=..
 PLATFORM=$(shell $(ROOT)/systype.sh)
 include $(ROOT)/Make.defines.$(PLATFORM)
 
-PROGS = dirshow2 stdinout stdinout2 shell1 testerror ugid
+PROGS = dirshow2 stdinout stdinout2 shell1 testerror ugid shell2
 #getcputc hello ls1 mycat shell1 shell2 testerror uidgid
 
 all:	$(PROGS)
