@@ -1,4 +1,4 @@
-DIRS = lib starting
+DIRS = lib starting fileio
 
 all:
 	for i in $(DIRS); do \
