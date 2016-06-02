@@ -1,7 +1,7 @@
 #include "apue.h"
 #include <dirent.h>
 
-main (int argc, char *argv[]) {
+int main (int argc, char *argv[]) {
 	DIR *dp;
 	struct dirent *dirp;
 	
