@@ -34,6 +34,18 @@ err_quit(const char *fmt, ...)
 	exit(1);
 }
 
+void
+err_dump(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	err_doit(1, errno, fmt, ap);
+	va_end(ap);
+	abort();
+	exit(1);
+}
+
 static void 
 err_doit(int errnoflag, int error, const char *fmt, va_list ap)
 {
