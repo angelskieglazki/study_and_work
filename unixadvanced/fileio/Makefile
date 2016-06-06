@@ -2,7 +2,7 @@ ROOT=..
 PLATFORM=$(shell $(ROOT)/systype.sh)
 include $(ROOT)/Make.defines.$(PLATFORM)
 
-PROGS = filehole mycat fileflags
+PROGS = filehole mycat fileflags setflags
 
 all: $(PROGS)
 
