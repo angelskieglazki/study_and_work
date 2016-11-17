@@ -1,4 +1,4 @@
-DIRS = lib starting fileio threads
+DIRS = lib starting fileio threads filedir
 
 all:
 	for i in $(DIRS); do \
