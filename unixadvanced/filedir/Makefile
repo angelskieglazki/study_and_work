@@ -3,7 +3,7 @@ PLATFORM=$(shell $(ROOT)/systype.sh)
 include $(ROOT)/Make.defines.$(PLATFORM)
 
 
-PROGS =	filetype access
+PROGS =	filetype access umask
 
 
 all:	$(PROGS) 
