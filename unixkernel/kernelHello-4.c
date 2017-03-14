@@ -24,7 +24,7 @@ static void __exit hello_4_exit(void)
 module_init(hello_4_init);
 module_exit(hello_4_exit);
 
-/MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL");
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
