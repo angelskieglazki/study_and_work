@@ -28,6 +28,10 @@ MODULE_PARM_DESC(mystring, "A character string");
 static int __init hello_5_init(void) 
 {
 	printk(KERN_ALERT "HELLO, 5\n==========\n");
+    printk(KERN_ALERT "myshort: %hd\n", myshort);
+    printk(KERN_ALERT "myint: %d\n", myint);
+    printk(KERN_ALERT "mylong: %ld\n", mylong);
+    printk(KERN_ALERT "mystring: %s\n", mystring);
 
 	return 0;
 }
