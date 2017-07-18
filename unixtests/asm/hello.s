@@ -30,4 +30,3 @@ main:
         int  $0x80
 
         .size  main, .-main
-
