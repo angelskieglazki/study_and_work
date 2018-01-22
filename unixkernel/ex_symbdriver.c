@@ -18,19 +18,36 @@ static struct cdev *my_cdev;
 
 static int ex_symbdriver_open(struct inode *inode, struct file *file)
 {
+		static int counter = 0;
+		char *kbuf = kmalloc(KBUF_SIZE, GFP_KERNEL);
+		file->private_data = kbuf;
+
 		printk(KERN_INFO "Opening device %s: \n\n", MYDEV_NAME);
+		counter++;
+		printk(KERN_INFO "Counter: %d\n", counter);
+		printk(KERN_INFO "Module refcounter: %d\n", module_refcount(THIS_MODULE));
+
 		return 0;
 }
 
 static int ex_symbdriver_release(struct inode *inode, struct file *file)
 {
 		printk(KERN_INFO "Release device %s: \n\n", MYDEV_NAME);
+		char *kbuf = file->private_data;
+
+		printk(KERN_INFO "Free buffer");
+		if (kbuf) kfree(kbuf);
+		kbuf = NULL;
+		file->private_data = NULL;
+
 		return 0;
 }
 
 static ssize_t ex_symbdriver_read(struct file *file, char __user *buf, 
 	size_t lbuf, loff_t *ppos)
 {
+		char *kbuf = file->private_data;
+
 		int nbytes = lbuf - copy_to_user(buf, kbuf + *ppos, lbuf);
 		*ppos += nbytes;
 
@@ -41,6 +58,8 @@ static ssize_t ex_symbdriver_read(struct file *file, char __user *buf,
 static ssize_t ex_symbdriver_write(struct file *file, const char __user *buf, 
 	size_t lbuf, loff_t *ppos)
 {
+		char *kbuf = file->private_data;
+		
 		int nbytes = lbuf - copy_from_user(kbuf + *ppos, buf, lbuf);
 		*ppos += nbytes;
 
@@ -58,7 +77,7 @@ static const struct file_operations mycdev_fops ={
 
 static int __init init_ex_symbdriver(void)
 {
-        printk(KERN_ALERT "Hello Kernek\n");
+        printk(KERN_ALERT "Hello Kernel\n");
 
         kbuf = kmalloc(KBUF_SIZE,  GFP_KERNEL);
         first = MKDEV(my_major, my_minor);
@@ -72,8 +91,11 @@ static int __init init_ex_symbdriver(void)
         return 0;
 }
 static void __exit cleanup_ex_symbdriver(void)
-{
+{		
         printk(KERN_ALERT "Goodbye world 1.\n");
+
+        if (my_cdev) cdev_del(my_cdev);
+        unregister_chrdev_region(first, count);
 }
 
 module_init(init_ex_symbdriver);
