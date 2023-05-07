@@ -20,6 +20,7 @@ cmake-build-debug/
 *.vcxproj
 *.xcodeproj
 .idea/
+.vscode/
 
 # Generated files
 CMakeCache.txt
