@@ -5,3 +5,29 @@ modules.order
 *.ko
 *.mod.c
 /.tmp_versions
+# C++ object files and executables
+*.o
+*.exe
+*.out
+
+# CMake build directory
+build/
+
+# IDE specific files (e.g. Visual Studio, XCode, etc.)
+.vs/
+*.sln
+*.vcxproj
+*.xcodeproj
+
+# Generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# Editor backup files
+*~
+
+# Other build artifacts
+*.a
+*.so
