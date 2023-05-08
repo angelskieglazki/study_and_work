@@ -5,6 +5,7 @@ include(CTest)
 enable_testing()
 
 add_executable(memento1 memento1.cpp)
+add_executable(memento2 memento2.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
