@@ -9,6 +9,7 @@ add_executable(sequence2 sequence2.cpp)
 add_executable(foreach3 foreach3.cpp)
 add_executable(bind1 bind1.cpp)
 add_executable(compose3 compose3.cpp)
+add_executable(meanvalue meanvalue.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
