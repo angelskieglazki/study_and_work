@@ -1,0 +1,3 @@
+[submodule "cpp/lua-sol-tests/sol2"]
+	path = cpp/lua-sol-tests/sol2
+	url = https://github.com/ThePhD/sol2.git
