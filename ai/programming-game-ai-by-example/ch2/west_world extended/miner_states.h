@@ -14,6 +14,7 @@ public:
     void enter(Miner* ) override;
     void execute(Miner* ) override;
     void exit(Miner* ) override;
+    bool onMessage(Miner*, const Telegram&) override;
 };
 
 class VisitBankAndDepositGold : public State<Miner> {
@@ -26,6 +27,7 @@ public:
     void enter(Miner* ) override;
     void execute(Miner* ) override;
     void exit(Miner* ) override;
+    bool onMessage(Miner*, const Telegram&) override;
 };
 
 class GoHomeAndSleepTilRested : public State<Miner> {
@@ -38,6 +40,7 @@ public:
     void enter(Miner* ) override;
     void execute(Miner* ) override;
     void exit(Miner* ) override;
+    bool onMessage(Miner*, const Telegram&) override;
 };
 
 class QuenchThirst : public State<Miner> {
@@ -50,4 +53,19 @@ public:
     void enter(Miner* ) override;
     void execute(Miner* ) override;
     void exit(Miner* ) override;
+    bool onMessage(Miner*, const Telegram&) override;
+};
+
+
+class EatStew : public State<Miner> {
+    EatStew() = default;
+public:
+    EatStew(const EatStew&) = delete;
+    EatStew& operator=(const EatStew&) = delete;
+
+    static EatStew* instance();
+    void enter(Miner* ) override;
+    void execute(Miner* ) override;
+    void exit(Miner* ) override;
+    bool onMessage(Miner*, const Telegram&) override;
 };

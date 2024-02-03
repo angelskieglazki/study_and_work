@@ -126,3 +126,4 @@ void QuenchThirst::execute(Miner *miner) {
 void QuenchThirst::exit(Miner *miner) {
     std::cout << "\n" << getNameOfEntity(miner->getId()) << ": " << "Leavin' the saloon";
 }
+

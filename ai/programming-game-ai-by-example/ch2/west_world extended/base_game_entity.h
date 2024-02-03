@@ -10,6 +10,8 @@ public:
 
     virtual void update() = 0;
 
+    virtual bool handleMessage(const Telegram& msg) = 0;
+
     int getId() const noexcept;
 
 private:

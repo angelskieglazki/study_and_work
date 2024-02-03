@@ -8,11 +8,8 @@
 template<typename EntityType>
 class StateMachine {
 public:
-    StateMachine(EntityType* owner)
+    explicit StateMachine(EntityType* owner)
         : owner_(owner)
-        , currentState_(nullptr)
-        , prevState_(nullptr)
-        , globalState_(nullptr)
         {}
 
     virtual ~StateMachine() = default;
@@ -24,6 +21,12 @@ public:
     void update() const {
         if (globalState_) globalState_->execute(owner_);
         if (currentState_) currentState_->execute(owner_);
+    }
+
+    bool handleMessage(const Telegram& msg) const {
+        if (currentState_ && currentState_->onMessage(owner_, msg)) return true;
+        if (globalState_ && globalState_->onMessage(owner_, msg)) return true;
+        return false;
     }
 
     void changeState(State<EntityType>* newstate) {
@@ -48,8 +51,8 @@ public:
     State<EntityType>* globalState() const { return globalState_; }
 
 private:
-    EntityType* owner_;
-    State<EntityType>* currentState_;
-    State<EntityType>* prevState_;
-    State<EntityType>* globalState_;
+    EntityType* owner_{nullptr};
+    State<EntityType>* currentState_{nullptr};
+    State<EntityType>* prevState_{nullptr};
+    State<EntityType>* globalState_{nullptr};
 };
