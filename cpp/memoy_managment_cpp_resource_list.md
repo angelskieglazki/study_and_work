@@ -1,6 +1,10 @@
 # Memory Management  Lecture - Breda University of applied sciences - Games
 This is the resource repositry for my memory managment lecture / workshop series at [Breda University of applied sciences - Games](https://www.buas.nl/en/games). It is mainly targeted for game developers
 
+https://www.youtube.com/watch?v=LIb3L4vKZ7U
+https://github.com/FelixPetriconi/AllocatorBuilder
+https://github.com/lukaszlaszko/allocators
+
 ## Content
 - [Great Reads directly about Memory Managment](#great-reads)
 - [Great Youtube Videos directly about Memory Managment](#great-youtube-videos)
