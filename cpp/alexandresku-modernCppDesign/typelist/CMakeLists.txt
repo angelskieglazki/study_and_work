@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(test VERSION 0.1.0)
 
-add_executable(test main.cpp)
-add_executable(test1 nmain.cpp)
+add_executable(test main-newstyle.cpp)
+add_executable(test1 main-oldstyle.cpp)
 
 set_target_properties(test
         PROPERTIES
