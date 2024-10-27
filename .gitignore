@@ -35,3 +35,4 @@ cmake_install.cmake
 # Other build artifacts
 *.a
 *.so
+.cache/
