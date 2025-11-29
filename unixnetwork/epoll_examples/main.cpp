@@ -1,16 +1,23 @@
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>
+#include <bits/types/sigset_t.h>
 #include <cerrno>
+#include <chrono>
+#include <csignal>
 #include <cstdint>
 #include <cstring>
 #include <errno.h>
 #include <fcntl.h>
 #include <iostream>
 #include <netinet/in.h>
+#include <signal.h>
 #include <stdexcept>
 #include <string>
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
+#include <sys/signalfd.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
@@ -96,6 +103,56 @@ private:
   FD epoll_fd_;
 };
 
+class GracefullShutdown {
+public:
+  static constexpr uint64_t SIGNAL_TAG = 0xAAAAAAAAAAAAAAAAULL;
+  static constexpr uint64_t WAKEUP_TAG = 0xBBBBBBBBBBBBBBBBULL;
+
+  GracefullShutdown(Epoll &epoll) {
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGTERM);
+    if (sigprocmask(SIG_BLOCK, &mask, nullptr) == -1) {
+      throw std::runtime_error("sigprocmask");
+    }
+
+    int sfd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
+    if (sfd < 0) {
+      throw std::runtime_error("signalfd");
+    }
+    signal_fd_.reset(sfd);
+
+    int wfd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    if (wfd < 0) {
+      throw std::runtime_error("eventfd");
+    }
+    wakeup_fd_.reset(wfd);
+
+    epoll.add(signal_fd_.get(), EPOLLIN, reinterpret_cast<void *>(SIGNAL_TAG));
+    epoll.add(wakeup_fd_.get(), EPOLLIN, reinterpret_cast<void *>(WAKEUP_TAG));
+  }
+
+  bool should_stop() const {
+    uint64_t val;
+    while (read(signal_fd_.get(), &val, sizeof(val)) == sizeof(val)) {
+    }
+    return true;
+  }
+
+  void notify_stop() {
+    uint64_t one = 1;
+    write(wakeup_fd_.get(), &one, sizeof(one));
+  }
+
+  static bool is_signal_event(uint64_t tag) { return tag == SIGNAL_TAG; }
+  static bool is_wakeup_event(uint64_t tag) { return tag == WAKEUP_TAG; }
+
+private:
+  FD signal_fd_;
+  FD wakeup_fd_;
+};
+
 void set_nonblocking(int fd) {
   int flags = fcntl(fd, F_GETFL, 0);
   if (flags < 0) {
@@ -120,7 +177,7 @@ std::string client_addr(int fd) {
 
 class EchoServer {
 public:
-  void run() {
+  EchoServer() : shutdown_handler_(epoll_) {
     int fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (fd == -1) {
       throw std::runtime_error("socket");
@@ -143,16 +200,29 @@ public:
     }
 
     listen_fd_.reset(fd);
-    epoll_.add(fd, EPOLLIN, (void*)(uintptr_t)fd);
+    epoll_.add(fd, EPOLLIN, (void *)(uintptr_t)fd);
     std::cout << "ECHO-server started on port: " << PORT << "\n";
+  }
 
+  void run() {
     std::vector<epoll_event> events(MAX_EVENTS);
 
     while (true) {
       int n = epoll_.wait(events.data(), MAX_EVENTS);
 
+      bool got_signal = false;
+
       for (int i = 0; i < n; ++i) {
-        int client_fd = (uintptr_t)events[i].data.ptr;
+        uint64_t tag = reinterpret_cast<uint64_t>(events[i].data.ptr);
+
+        if (GracefullShutdown::is_signal_event(tag)) {
+          if (shutdown_handler_.should_stop()) {
+            got_signal = true;
+          }
+          continue;
+        }
+
+        int client_fd = (uintptr_t)tag;
         if (client_fd == listen_fd_.get()) {
           handle_accept();
         } else {
@@ -168,7 +238,38 @@ public:
           }
         }
       }
+      if (got_signal)
+        break;
     }
+
+    std::cout << "\nGot signal, shutting down...\n";
+
+    epoll_.del(listen_fd_.get());
+    listen_fd_.close();
+
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+
+    while (!client_buffers_.empty() &&
+           std::chrono::steady_clock::now() < deadline) {
+      int n = epoll_.wait(events.data(), MAX_EVENTS, 100);
+
+      for (int i = 0; i < n; ++i) {
+        int fd = (uintptr_t)events[i].data.ptr;
+        if (events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
+          close_client(fd);
+        }
+        if (events[i].events & EPOLLOUT) {
+          handle_write(fd);
+        }
+      }
+    }
+
+    for (auto &[fd, buffer] : client_buffers_) {
+      close_client(fd);
+    }
+    client_buffers_.clear();
+
+    std::cout << "Server Graceful Shutdown\n";
   }
 
 private:
@@ -264,6 +365,7 @@ private:
 
   FD listen_fd_;
   Epoll epoll_;
+  GracefullShutdown shutdown_handler_;
   std::unordered_map<int, std::vector<char>> client_buffers_;
 };
 
